@@ -6,11 +6,11 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "dev:frontend": "vite",
-    "dev:backend": "cd backend && ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev:backend": "npx ts-node --project tsconfig.json backend/src/index.ts",
     "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "vite build",
-    "build:backend": "cd backend && tsc",
-    "start": "node dist/backend/index.js",
+    "build:backend": "tsc --project tsconfig.json --outDir dist/backend backend/src/**/*.ts",
+    "start": "node dist/backend/src/index.js",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -18,6 +18,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "mongodb": "^5.8.1",
+    "mongoose": "^7.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.15.0"
@@ -37,9 +39,9 @@
     "nodemon": "^3.0.1",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.3",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.2.2",
+    "typescript": "^5.8.3",
     "vite": "^4.4.9"
   },
   "engines": {

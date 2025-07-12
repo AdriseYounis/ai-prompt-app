@@ -11,7 +11,6 @@ COPY vite.config.ts tsconfig.json ./
 COPY postcss.config.js tailwind.config.js ./
 COPY frontend frontend/
 COPY backend backend/
-COPY backend/tsconfig.json backend/
 
 # Build frontend
 RUN npm run build:frontend
