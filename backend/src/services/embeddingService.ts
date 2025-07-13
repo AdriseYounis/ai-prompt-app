@@ -67,8 +67,6 @@ export class EmbeddingService {
     return out;
   }
 
-  /* ----------  VECTOR UTILITIES (unchanged) ---------- */
-
   calculateSimilarity(a: number[], b: number[]): number {
     if (a.length !== b.length) throw new Error("Vector dim mismatch");
     let dot = 0,
@@ -100,8 +98,6 @@ export class EmbeddingService {
       .slice(0, limit);
   }
 
-  /* ----------  SMART RESPONSE (unchanged logic) ---------- */
-
   async generateSmartResponse(
     query: string,
     similar: VectorSearchResult[],
@@ -109,7 +105,6 @@ export class EmbeddingService {
     if (this.aiService) {
       return this.aiService.generateResponse(query, similar);
     }
-    // fallback—minimal response if AI service missing
     return {
       content: "AI service unavailable; please try later.",
       source: "fallback",
@@ -120,8 +115,6 @@ export class EmbeddingService {
       },
     };
   }
-
-  /* ----------  Helpers ---------- */
 
   isValidEmbedding(vec: number[]): boolean {
     return (

@@ -16,13 +16,10 @@ let databaseService: DatabaseService;
 let aiService: AIService;
 
 const initializeServices = () => {
-  // -------------------------------------------------
-  // 1. Configure the AI service (Ollama‑only)
-  // -------------------------------------------------
   if (!aiService) {
     const aiConfig = {
       ...defaultAIServiceConfig,
-      // only the Ollama provider is enabled
+
       providers: {
         ollama: {
           endpoint: process.env.OLLAMA_ENDPOINT || "http://localhost:11434",
@@ -38,9 +35,6 @@ const initializeServices = () => {
     console.log("🤖 AI Service initialized with *Ollama* provider");
   }
 
-  // -------------------------------------------------
-  // 2. Create the embedding service — also via Ollama
-  // -------------------------------------------------
   if (!embeddingService) {
     embeddingService = new EmbeddingService({
       endpoint: process.env.OLLAMA_ENDPOINT || "http://localhost:11434",
@@ -50,9 +44,6 @@ const initializeServices = () => {
     console.log("🧩 Embedding Service initialized with *Ollama* model");
   }
 
-  // -------------------------------------------------
-  // 3. Database service wires everything together
-  // -------------------------------------------------
   if (!databaseService) {
     const db = getDB();
     databaseService = new DatabaseService(db, embeddingService, aiService);
@@ -60,10 +51,6 @@ const initializeServices = () => {
   }
 };
 
-/**
- * Smart search endpoint that uses vector embeddings to find relevant prompts
- * and generates intelligent responses using AI service with fallback
- */
 router.post(
   "/smart-search",
   async (
@@ -84,7 +71,6 @@ router.post(
 
       console.log(`Smart search query: "${query}"`);
 
-      // Perform smart search with AI service and fallback
       const aiResponse = await databaseService.smartSearch(
         query,
         threshold,

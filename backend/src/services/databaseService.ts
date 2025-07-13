@@ -4,7 +4,6 @@ import { EmbeddingService } from "./embeddingService";
 import { AIService, AIServiceResponse } from "./ai/AIService";
 
 export class DatabaseService {
-  // private db: Db; // Not used directly, keeping reference for future use
   private promptsCollection: Collection<PromptDocument>;
   private embeddingService: EmbeddingService;
   private aiService: AIService | null = null;
@@ -111,17 +110,21 @@ export class DatabaseService {
     try {
       // First, perform vector search to find similar documents
       const similarDocuments = await this.vectorSearch(query, threshold, limit);
+      return await this.embeddingService.generateSmartResponse(
+        query,
+        similarDocuments,
+      );
 
       // Generate smart response using AI service or embedding service
-      if (this.aiService) {
-        return await this.aiService.generateResponse(query, similarDocuments);
-      } else {
-        // Fallback to embedding service
-        return await this.embeddingService.generateSmartResponse(
-          query,
-          similarDocuments,
-        );
-      }
+      // if (this.aiService) {
+      //   return await this.aiService.generateResponse(query, similarDocuments);
+      // } else {
+      //   // Fallback to embedding service
+      //   return await this.embeddingService.generateSmartResponse(
+      //     query,
+      //     similarDocuments,
+      //   );
+      // }
     } catch (error) {
       console.error("Error performing smart search:", error);
       throw new Error("Failed to perform smart search");
