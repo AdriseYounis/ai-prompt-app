@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import Prompt from "../models/Prompt";
+import { getDB } from "../server";
 
 const router = Router();
 
@@ -12,14 +12,20 @@ router.post("/prompt", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const newPrompt = new Prompt({
+    const db = getDB();
+    const promptsCollection = db.collection("prompts");
+
+    const newPrompt = {
       prompt,
       response: "This is a placeholder response.",
-    });
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-    await newPrompt.save();
-    console.log("Prompt saved with ID:", newPrompt._id);
-    res.json({ response: newPrompt._id.toString() });
+    const result = await promptsCollection.insertOne(newPrompt);
+    console.log("Prompt saved with ID:", result.insertedId);
+
+    res.json({ response: result.insertedId.toString() });
   } catch (error) {
     console.error("Error saving prompt:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -28,7 +34,15 @@ router.post("/prompt", async (req: Request, res: Response): Promise<void> => {
 
 router.get("/prompts", async (_req: Request, res: Response): Promise<void> => {
   try {
-    const prompts = await Prompt.find().sort({ createdAt: -1 }).limit(10);
+    const db = getDB();
+    const promptsCollection = db.collection("prompts");
+
+    const prompts = await promptsCollection
+      .find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .toArray();
+
     console.log("Retrieved prompts:", prompts.length);
     res.json(prompts);
   } catch (error) {

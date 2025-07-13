@@ -22,6 +22,9 @@ RUN npm run build:backend
 FROM node:18-alpine
 WORKDIR /app
 
+# Install system dependencies including curl for health checks
+RUN apk add --no-cache curl
+
 # Install serve for frontend
 RUN npm install -g serve
 
@@ -40,9 +43,18 @@ RUN chmod +x ./scripts/start.sh
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV FRONTEND_PORT=3001
+ENV OLLAMA_ENDPOINT=http://ollama:11434
+ENV OLLAMA_MODEL=llama3.1:latest
+ENV OLLAMA_TEMPERATURE=0.7
+ENV OLLAMA_MAX_TOKENS=500
+ENV OLLAMA_TIMEOUT=30000
 
 # Expose ports
 EXPOSE 3000 3001
 
-# Start both services
-CMD ["./scripts/start.sh"]
+# Add health check for the application
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/api/health || exit 1
+
+# Start both services - use production start script
+CMD ["npm", "run", "start:prod"]

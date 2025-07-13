@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import mongoose from "mongoose";
+import { MongoClient } from "mongodb";
 import routes from "./routes";
 
 dotenv.config();
@@ -12,19 +12,22 @@ const port = process.env.PORT;
 app.use(cors());
 app.use(express.json());
 
-// Mount all routes
-app.use(routes);
-
-// MongoDB connection
+// MongoDB connection setup
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
   throw new Error("MONGODB_URI is not defined");
 }
 
-const connectDB = async (): Promise<void> => {
+let client: MongoClient;
+let db: ReturnType<MongoClient["db"]>;
+
+export const connectDB = async (): Promise<void> => {
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log(`URL ${process.env.MONGODB_URI?.toString()}`);
+    client = new MongoClient(MONGODB_URI);
+    await client.connect();
+    db = client.db("ai_prompt_app"); // Your DB name here
+
+    console.log(`URL ${MONGODB_URI}`);
     console.log("✅ Connected to MongoDB");
   } catch (error) {
     console.error("❌ MongoDB connection error:", error);
@@ -32,16 +35,34 @@ const connectDB = async (): Promise<void> => {
   }
 };
 
+// Provide a way for routes to access the db instance
+export const getDB = () => {
+  if (!db) {
+    throw new Error("MongoDB not connected yet");
+  }
+  return db;
+};
+
+// Mount all routes
+app.use(routes);
+
 // Global error handler
-app.use((err: Error, _req: express.Request, res: express.Response): void => {
-  console.error("❌ Unhandled error:", err.stack);
-  res.status(500).json({ error: "Something broke!" });
-});
+app.use(
+  (
+    err: Error,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction,
+  ): void => {
+    console.error("❌ Unhandled error:", err.stack);
+    res.status(500).json({ error: "Something broke!" });
+  },
+);
 
 // Graceful shutdown
 const gracefulShutdown = (): void => {
   console.log("🛑 Shutdown signal received. Closing resources...");
-  mongoose.connection.close(false).then(() => {
+  client.close(false).then(() => {
     console.log("✅ MongoDB connection closed.");
     process.exit(0);
   });
@@ -57,5 +78,22 @@ connectDB().then(() => {
     console.log(`🔍 Health: http://localhost:${port}/api/health`);
     console.log(`📥 Prompt POST: http://localhost:${port}/api/prompt`);
     console.log(`📜 Prompt list: http://localhost:${port}/api/prompts`);
+    console.log(`🧠 Smart search: http://localhost:${port}/api/smart-search`);
+    console.log(`🔧 Smart prompt: http://localhost:${port}/api/smart-prompt`);
+    console.log(
+      `📊 Embedding stats: http://localhost:${port}/api/embedding-stats`,
+    );
+    console.log(
+      `🔄 Migrate embeddings: http://localhost:${port}/api/migrate-embeddings`,
+    );
+
+    // Check for OpenAI API key
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn(
+        "⚠️  OPENAI_API_KEY not found. Smart search features will not work.",
+      );
+    } else {
+      console.log("✅ OpenAI API key configured");
+    }
   });
 });

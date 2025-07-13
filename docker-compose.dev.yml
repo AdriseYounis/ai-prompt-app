@@ -1,0 +1,79 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://admin:password123@mongodb:27017/ai_prompt_app?authSource=admin&directConnection=true
+      - PORT=5000
+      - FRONTEND_PORT=3001
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret_key}
+      - OLLAMA_ENDPOINT=http://ollama:11434
+      - OLLAMA_MODEL=llama3.1:latest
+      - OLLAMA_TEMPERATURE=0.7
+      - OLLAMA_MAX_TOKENS=500
+      - OLLAMA_TIMEOUT=30000
+    ports:
+      - "5000:5000" # Backend API (development port)
+      - "3001:3001" # Frontend
+    volumes:
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./tailwind.config.js:/app/tailwind.config.js
+      - ./postcss.config.js:/app/postcss.config.js
+      - /app/node_modules
+    command: >
+      sh -c "
+        echo '🔧 Installing dependencies...' &&
+        npm install &&
+        echo '🚀 Starting development servers...' &&
+        npm run dev
+      "
+
+  ollama:
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_ORIGINS=*
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  ollama-pull:
+    command: >
+      sh -c "
+        echo '⏳ Waiting for Ollama service...' &&
+        sleep 15 &&
+        echo '📥 Pulling llama3.1:latest model (this may take a while)...' &&
+        ollama pull llama3.1:latest &&
+        echo '✅ Model downloaded successfully!' &&
+        echo '🔍 Available models:' &&
+        ollama list
+      "
+
+  mongodb:
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: ai_prompt_app
+    volumes:
+      - mongodb_data_dev:/data/db
+      - ./scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+
+volumes:
+  mongodb_data_dev:
+  ollama_data:
