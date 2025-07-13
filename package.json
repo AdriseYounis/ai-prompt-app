@@ -6,11 +6,11 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "dev:frontend": "vite",
-    "dev:backend": "npx ts-node --project tsconfig.json backend/src/index.ts",
+    "dev:backend": "npx ts-node --project tsconfig.json backend/src/server.ts",
     "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "vite build",
     "build:backend": "tsc --project tsconfig.json --outDir dist/backend backend/src/**/*.ts",
-    "start": "node dist/backend/src/index.js",
+    "start": "node dist/backend/src/server.js",
     "preview": "vite preview"
   },
   "dependencies": {

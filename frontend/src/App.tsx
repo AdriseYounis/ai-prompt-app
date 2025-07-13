@@ -19,7 +19,7 @@ function App() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:3030/api/prompt", {
+      const res = await fetch(`/api/prompt`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,7 +41,7 @@ function App() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch("http://localhost:3030/api/prompts");
+        const res = await fetch(`/api/prompts`);
         const data = await res.json();
         console.log("Fetched history:", data);
 

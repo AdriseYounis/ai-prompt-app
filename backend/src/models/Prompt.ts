@@ -23,7 +23,7 @@ const PromptSchema: Schema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Create an index on the prompt field for faster searching

@@ -15,7 +15,7 @@ A containerized application for interacting with AI models through a simple inte
 ai-prompt-app/
 ├── backend/             # Backend Node.js Express application
 │   ├── src/             # Source code
-│   │   ├── index.ts     # Main entry point
+│   │   ├── server.ts     # Main entry point
 │   │   └── types.ts     # TypeScript type definitions
 │   └── tsconfig.json    # TypeScript configuration for backend
 ├── frontend/            # Frontend React application
@@ -114,7 +114,7 @@ ai-prompt-app/
 
 ### Adding New API Endpoints
 
-1. Open `backend/src/index.ts`
+1. Open `backend/src/server.ts`
 2. Add new routes following the existing pattern
 3. Implement your custom logic
 
